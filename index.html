@@ -50,6 +50,16 @@
   .barras div.fut{opacity:.35;cursor:default}
   .detalle{display:block;color:var(--gris);font-size:13px}
   .total-mes{display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;border-top:2px solid var(--borde);font-weight:700}
+  .chips{display:flex;gap:8px;margin:4px 0 14px}
+  .chips button{flex:1;border:1.5px solid var(--borde);background:#fff;border-radius:999px;padding:9px 6px;font:inherit;font-size:14px;cursor:pointer}
+  .chips button.sel{border-color:var(--c);background:var(--c-suave);color:var(--c-osc);font-weight:700}
+  .mes-grupo{font-weight:800;font-size:15px;margin:18px 0 6px;color:var(--gris);text-transform:capitalize}
+  .pend{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:12px;margin-bottom:8px}
+  .pend div{flex:1;min-width:0}
+  .pend b{display:block;font-size:15px}
+  .pend small{display:block;color:var(--gris);font-size:13px;line-height:1.35;word-break:break-word}
+  .pend .imp{font-weight:800;white-space:nowrap}
+  .pend button{border:0;background:var(--c);color:#fff;border-radius:9px;padding:10px 12px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
   .resumen{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
   .resumen div{background:var(--fondo);border-radius:10px;padding:12px}
   .resumen span{display:block;color:var(--gris);font-size:13px}
@@ -98,6 +108,7 @@
     <div class="tarjeta" id="t-mes"><p class="sub" style="text-align:center">Cargando…</p></div>
     <div class="tarjeta" id="t-anio"></div>
     <button class="boton principal" onclick="irGasto()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Apuntar un gasto</button>
+    <button class="boton secundario" onclick="abrirAdjuntar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5L12.5 4a4 4 0 0 1 5.7 5.7L9.6 18.3a2 2 0 0 1-2.8-2.8L15 7.3"/></svg>Adjuntar factura a un gasto ya apuntado</button>
     <button class="boton secundario" onclick="mostrar('v-airbnb')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Subir archivo de Airbnb</button>
     <button class="boton secundario" onclick="informe()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Informe para la renta</button>
     <div class="tarjeta" id="t-avisos" style="margin-top:6px"></div>
@@ -146,6 +157,23 @@
     </div>
     <button class="boton principal" id="btnGuardar" onclick="guardar(false)">Guardar</button>
     <button class="boton enlace" onclick="volver()">Cancelar</button>
+  </section>
+
+  <!-- ADJUNTAR A GASTO EXISTENTE -->
+  <section id="v-adjuntar" class="vista">
+    <div class="tarjeta">
+      <div class="cab-tarjeta">
+        <div class="icono-circ"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5L12.5 4a4 4 0 0 1 5.7 5.7L9.6 18.3a2 2 0 0 1-2.8-2.8L15 7.3"/></svg></div>
+        <h2>Adjuntar factura</h2>
+        <p class="sub">Gastos ya apuntados que aún no tienen factura. Elige uno y adjunta la foto o el PDF escaneado.</p>
+      </div>
+      <div class="chips" id="filtroApto">
+        <button data-v="" class="sel">Todos</button><button data-v="00 Loft">00 Loft</button><button data-v="01 Apartamento">01 Apto.</button>
+      </div>
+      <div id="listaPend"><p class="sub" style="text-align:center">Cargando…</p></div>
+    </div>
+    <input type="file" id="fotoAdj" accept="image/*,application/pdf" style="display:none">
+    <button class="boton enlace" onclick="volver()">Volver</button>
   </section>
 
   <!-- AIRBNB -->
@@ -382,6 +410,59 @@ function irGasto(){
 }
 
 function etiquetaFoto(t){ document.getElementById('fotoLbl').querySelector('span').textContent=t; }
+function leerArchivo(f){
+  return new Promise(res=>{
+    const fr = new FileReader();
+    fr.onload = ()=>{
+      if(!f.type || !f.type.startsWith('image/')){ res({tipo:f.type||'application/pdf', base64:fr.result.split(',')[1]}); return; }
+      const img = new Image();
+      img.onload = ()=>{
+        const k = Math.min(1, 1600/Math.max(img.width,img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        res({tipo:'image/jpeg', base64:c.toDataURL('image/jpeg',0.75).split(',')[1]});
+      };
+      img.onerror = ()=> res({tipo:f.type, base64:fr.result.split(',')[1]});
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(f);
+  });
+}
+
+// ---------- Adjuntar factura a un gasto ya apuntado ----------
+let PEND = [], FILTRO = '', PEND_SEL = null;
+function abrirAdjuntar(){
+  mostrar('v-adjuntar');
+  document.getElementById('listaPend').innerHTML='<p class="sub" style="text-align:center">Cargando…</p>';
+  api('pendientes').then(l=>{ PEND=l; pintarPend(); })
+    .catch(e=>{ document.getElementById('listaPend').innerHTML='<p class="sub">'+esc(e.servidor?e.message:'Hace falta conexión para ver la lista.')+'</p>'; });
+}
+function pintarPend(){
+  const l = PEND.filter(x=>!FILTRO || x.apto===FILTRO);
+  if(!l.length){ document.getElementById('listaPend').innerHTML='<div class="ok">'+svg('<path d="M20 6L9 17l-5-5"/>',20)+'No queda ningún gasto sin factura</div>'; return; }
+  let h='', mesAnt='';
+  l.forEach(x=>{
+    if(x.mes!==mesAnt){ mesAnt=x.mes; h+='<div class="mes-grupo">'+MESES[parseInt(x.mes.slice(5),10)-1]+' '+x.mes.slice(0,4)+'</div>'; }
+    h+='<div class="pend"><div><b>'+esc(x.cat)+' · '+esc(x.apto.slice(0,2))+'</b><small>'+esc(x.fecha)+(x.concepto?' · '+esc(x.concepto):'')+'</small></div>'+
+       '<span class="imp">'+eur(x.importe)+'</span><button onclick="elegirPend('+x.fila+')">Adjuntar</button></div>';
+  });
+  document.getElementById('listaPend').innerHTML=h;
+}
+document.querySelectorAll('#filtroApto button').forEach(b=>b.onclick=()=>{
+  FILTRO=b.dataset.v; document.querySelectorAll('#filtroApto button').forEach(x=>x.classList.toggle('sel',x===b)); pintarPend();
+});
+function elegirPend(fila){ PEND_SEL = PEND.find(x=>x.fila===fila); document.getElementById('fotoAdj').value=''; document.getElementById('fotoAdj').click(); }
+document.getElementById('fotoAdj').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f || !PEND_SEL) return;
+  const x = PEND_SEL; toast('Subiendo factura…',15000);
+  try{
+    const foto = await leerArchivo(f);
+    const r = await api('adjuntar',{datos:{fila:x.fila, importe:x.importe, cat:x.cat, foto:foto}});
+    PEND = PEND.filter(p=>p.fila!==x.fila); pintarPend(); toast(r.texto,5000);
+  }catch(err){ toast('Error: '+(err.servidor?err.message:'sin conexión, inténtalo luego.'),6000); }
+});
+
 function procesarArchivo(f){
   return new Promise(res=>{
     const fr = new FileReader();
