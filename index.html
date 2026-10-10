@@ -33,8 +33,23 @@
   .apto{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--borde)}
   .apto b{font-size:16.5px;font-weight:700}
   .apto small{display:block;color:var(--gris);font-size:13.5px}
-  .cifra{font-size:24px;font-weight:800;letter-spacing:-.3px}
+  .cifra{font-size:21px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;padding-left:10px}
   .pos{color:var(--verde)}.neg{color:var(--rojo)}
+  .nav-mes{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .nav-mes button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--borde);background:#fff;color:var(--c);font:inherit;font-size:22px;font-weight:700;cursor:pointer;line-height:1}
+  .nav-mes button:disabled{opacity:.3;cursor:default}
+  .nav-mes h2{text-align:center;flex:1}
+  .barras{display:flex;align-items:flex-end;gap:4px;height:84px;margin:14px 0 4px;padding:0 2px}
+  .barras div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer}
+  .barras i{display:block;width:100%;border-radius:4px 4px 0 0;background:#C9D8E6;min-height:2px}
+  .barras i.neg{background:#E8B4AE}
+  .barras div.sel i{background:var(--c)}
+  .barras div.sel i.neg{background:var(--rojo)}
+  .barras span{font-size:10.5px;color:var(--gris);margin-top:3px}
+  .barras div.sel span{color:var(--c);font-weight:700}
+  .barras div.fut{opacity:.35;cursor:default}
+  .detalle{display:block;color:var(--gris);font-size:13px}
+  .total-mes{display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;border-top:2px solid var(--borde);font-weight:700}
   .resumen{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
   .resumen div{background:var(--fondo);border-radius:10px;padding:12px}
   .resumen span{display:block;color:var(--gris);font-size:13px}
@@ -81,6 +96,7 @@
   <!-- INICIO -->
   <section id="v-inicio" class="vista activa">
     <div class="tarjeta" id="t-mes"><p class="sub" style="text-align:center">Cargando…</p></div>
+    <div class="tarjeta" id="t-anio"></div>
     <button class="boton principal" onclick="irGasto()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Apuntar un gasto</button>
     <button class="boton secundario" onclick="mostrar('v-airbnb')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Subir archivo de Airbnb</button>
     <button class="boton secundario" onclick="informe()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Informe para la renta</button>
@@ -281,20 +297,24 @@ function cargar(){
   enviarPendientes();
 }
 
+let MSEL = null;
+function cap(t){ return t.charAt(0).toUpperCase()+t.slice(1); }
+
 function pintar(d){
   D = d;
   document.getElementById('subtitulo').textContent = 'Contabilidad de los apartamentos · ' + d.anio;
-  let h = '<div class="cab-tarjeta"><div class="icono-circ">'+
-    svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',28).replace('currentColor','var(--c)')+
-    '</div><h2>Beneficio de '+d.mesNombre+'</h2><p class="sub">Lo que te queda tras los gastos, en lo que va de mes</p></div>';
-  d.aptos.forEach(a=>{
-    h += '<div class="apto"><div><b>'+esc(a.nombre)+'</b><small>En el año: '+eur(a.anioNeto)+'</small></div>'+
-         '<div class="cifra '+signo(a.mesNeto)+'">'+eur(a.mesNeto)+'</div></div>';
+  if(MSEL===null || MSEL>d.mesIdx) MSEL = (d.mesIdx!=null ? d.mesIdx : new Date().getMonth());
+  pintarMes();
+
+  let a = '<h3>En lo que va de '+d.anio+'</h3>';
+  d.aptos.forEach(x=>{
+    a += '<div class="apto"><div><b>'+esc(x.nombre)+'</b><small>Entró '+eur(x.anioIng)+' · Gastos '+eur(x.anioGas)+'</small></div>'+
+         '<div class="cifra '+signo(x.anioNeto)+'">'+eur(x.anioNeto)+'</div></div>';
   });
-  h += '<div class="resumen">'+
-       '<div><span>Reserva para Hacienda (año)</span><strong>'+eur(d.hacienda)+'</strong></div>'+
-       '<div><span>Te queda limpio (año)</span><strong class="'+signo(d.limpio)+'">'+eur(d.limpio)+'</strong></div></div>';
-  document.getElementById('t-mes').innerHTML = h;
+  a += '<div class="resumen">'+
+       '<div><span>Reserva para Hacienda</span><strong>'+eur(d.hacienda)+'</strong></div>'+
+       '<div><span>Te queda limpio</span><strong class="'+signo(d.limpio)+'">'+eur(d.limpio)+'</strong></div></div>';
+  document.getElementById('t-anio').innerHTML = a;
 
   const np = pendientes().length;
   const avisos = (np ? ['Tienes '+np+' gasto(s) guardados en el móvil. Se enviarán solos cuando haya conexión.'] : []).concat(d.avisos);
@@ -307,6 +327,45 @@ function pintar(d){
     '<button class="op" data-v="'+esc(c.nombre)+'">'+(IC[c.nombre]?svg(IC[c.nombre]):'<span style="font-size:20px;display:block">'+esc(c.icono)+'</span>')+esc(c.nombre)+'</button>').join('');
   enganchar('cats','cat');
 }
+
+function pintarMes(){
+  const d = D;
+  if(!d.meses){ // hoja con código antiguo: solo el mes actual
+    let h='<h2>Beneficio de '+d.mesNombre+'</h2>';
+    d.aptos.forEach(a=>{ h+='<div class="apto"><div><b>'+esc(a.nombre)+'</b></div><div class="cifra '+signo(a.mesNeto)+'">'+eur(a.mesNeto)+'</div></div>'; });
+    document.getElementById('t-mes').innerHTML=h; return;
+  }
+  const m = d.meses[MSEL];
+  const enCurso = MSEL===d.mesIdx && d.mesAct.slice(0,4)==String(d.anio);
+  let h = '<div class="nav-mes"><button onclick="moverMes(-1)" '+(MSEL<=0?'disabled':'')+' aria-label="Mes anterior">‹</button>'+
+          '<div style="flex:1;text-align:center"><h2>'+cap(m.nombre)+' '+d.anio+'</h2>'+
+          '<p class="sub">'+(enCurso?'Mes en curso, hasta hoy':'Beneficio del mes')+'</p></div>'+
+          '<button onclick="moverMes(1)" '+(MSEL>=d.mesIdx?'disabled':'')+' aria-label="Mes siguiente">›</button></div>';
+
+  const max = Math.max(1, ...d.meses.slice(0,d.mesIdx+1).map(x=>Math.abs(x.neto)));
+  h += '<div class="barras">'+d.meses.map((x,i)=>{
+    const fut = i>d.mesIdx, alto = fut?0:Math.round(Math.abs(x.neto)/max*100);
+    return '<div class="'+(i===MSEL?'sel ':'')+(fut?'fut':'')+'" '+(fut?'':'onclick="irMes('+i+')"')+'>'+
+           '<i class="'+(x.neto<0?'neg':'')+'" style="height:'+alto+'%"></i><span>'+x.nombre.slice(0,1).toUpperCase()+'</span></div>';
+  }).join('')+'</div>';
+
+  m.aptos.forEach(a=>{
+    h += '<div class="apto"><div><b>'+esc(a.nombre)+'</b><small>Entró '+eur(a.ing)+' · Gastos '+eur(a.gas)+'</small></div>'+
+         '<div class="cifra '+signo(a.neto)+'">'+eur(a.neto)+'</div></div>';
+  });
+  h += '<div class="total-mes"><span>Total del mes</span><span class="'+signo(m.neto)+'" style="font-size:20px">'+eur(m.neto)+'</span></div>';
+  document.getElementById('t-mes').innerHTML = h;
+}
+function moverMes(n){ irMes(MSEL+n); }
+function irMes(i){ if(!D||!D.meses) return; MSEL=Math.max(0,Math.min(D.mesIdx,i)); pintarMes(); }
+
+// Deslizar el dedo sobre la tarjeta para cambiar de mes
+(function(){
+  let x0=null; const el=()=>document.getElementById('t-mes');
+  document.addEventListener('touchstart',e=>{ if(el().contains(e.target)) x0=e.touches[0].clientX; },{passive:true});
+  document.addEventListener('touchend',e=>{ if(x0===null) return; const dx=e.changedTouches[0].clientX-x0; x0=null;
+    if(Math.abs(dx)>50) moverMes(dx<0?1:-1); },{passive:true});
+})();
 
 function enganchar(idCont, clave){
   document.querySelectorAll('#'+idCont+' .op').forEach(b=>b.onclick=()=>marcar(idCont, clave, b.dataset.v));
