@@ -110,6 +110,30 @@
   .etq{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-top:3px}
   .etq.si{background:#E3F1E7;color:var(--verde)}.etq.no{background:#F6E3E1;color:var(--rojo)}.etq.pe{background:var(--aviso);color:#8A6414}
   a{color:var(--c);font-weight:600}
+
+  /* ---------- Pantallas grandes (portátil) ---------- */
+  .tabla-hist{width:100%;border-collapse:collapse;font-size:14px}
+  .tabla-hist th{position:sticky;top:73px;background:#fff;text-align:left;font-size:12.5px;color:var(--gris);font-weight:700;padding:9px 10px;border-bottom:2px solid var(--borde);z-index:1}
+  .tabla-hist td{padding:9px 10px;border-bottom:1px solid var(--borde);vertical-align:top}
+  .tabla-hist td.num,.tabla-hist th.num{text-align:right;white-space:nowrap}
+  .tabla-hist tr.grupo td{background:var(--fondo);font-weight:800;color:var(--gris);text-transform:capitalize;padding:8px 10px}
+  .tabla-hist tr.con-archivo{cursor:pointer}
+  .tabla-hist tr.con-archivo:hover td{background:var(--c-suave)}
+  .tabla-hist td.ing{color:var(--verde);font-weight:700}
+  @media (min-width:1000px){
+    main{max-width:1180px;padding:28px 28px 48px}
+    header{padding-left:max(28px,calc((100vw - 1180px)/2 + 28px))}
+    #v-inicio.activa{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+    #v-inicio .col-der{position:sticky;top:96px}
+    .vista:not(#v-inicio):not(#v-historial){max-width:620px;margin:0 auto}
+    #hFiltros{display:grid;grid-template-columns:2fr 1.3fr 1.3fr;gap:10px 14px;align-items:center;margin-bottom:6px}
+    #hFiltros input{margin:0!important}
+    #hFiltros .chips{margin:0!important}
+    #hFiltros .filtros{margin:0;grid-column:1/2}
+    #hFiltros #hFact{grid-column:2/4}
+    .totales-hist{grid-template-columns:repeat(2,minmax(0,220px))}
+    .barras{height:110px}
+  }
 </style>
 </head>
 <body>
@@ -121,8 +145,11 @@
 <main>
   <!-- INICIO -->
   <section id="v-inicio" class="vista activa">
+    <div class="col-izq">
     <div class="tarjeta" id="t-mes"><p class="sub" style="text-align:center">Cargando…</p></div>
     <div class="tarjeta" id="t-anio"></div>
+    </div>
+    <div class="col-der">
     <button class="boton principal" onclick="irGasto()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Apuntar un gasto</button>
     <button class="boton secundario" onclick="abrirAdjuntar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5L12.5 4a4 4 0 0 1 5.7 5.7L9.6 18.3a2 2 0 0 1-2.8-2.8L15 7.3"/></svg>Adjuntar factura a un gasto ya apuntado</button>
     <button class="boton secundario" onclick="mostrar('v-airbnb')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Subir archivo de Airbnb</button>
@@ -130,6 +157,7 @@
     <button class="boton secundario" onclick="abrirHistorial()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>Historial de movimientos</button>
     <div class="tarjeta" id="t-avisos" style="margin-top:6px"></div>
     <button class="boton enlace" onclick="abrirHoja()">Abrir la hoja completa</button>
+    </div>
   </section>
 
   <!-- GASTO -->
@@ -217,6 +245,7 @@
         <h2>Historial</h2>
         <p class="sub">Todo lo apuntado en el año. Solo para consultar: aquí no se cambia nada.</p>
       </div>
+      <div id="hFiltros">
       <input id="hBuscar" placeholder="Buscar: Endesa, Rosario, 206,22…" autocomplete="off" style="margin:6px 0 10px">
       <div class="chips peq" id="hApto">
         <button data-v="" class="sel">Todos</button><button data-v="00 Loft">00 Loft</button><button data-v="01 Apartamento">01 Apto.</button>
@@ -230,6 +259,7 @@
       </div>
       <div class="chips peq" id="hFact">
         <button data-v="" class="sel">Factura: todas</button><button data-v="Sí">Con factura</button><button data-v="No">Sin factura</button><button data-v="Pendiente">Pendiente</button>
+      </div>
       </div>
       <div class="totales-hist" id="hTotales"></div>
       <div id="listaHist"><p class="sub" style="text-align:center">Cargando…</p></div>
@@ -630,6 +660,7 @@ function clavesCat(cat){
   return c && c.claves ? String(c.claves).replace(/\|/g,' ') : '';
 }
 function normHist(t){ return sinAcentos(String(t||'').toLowerCase()); }
+const ANCHO = window.matchMedia ? window.matchMedia('(min-width:1000px)') : {matches:false};
 function pintarHist(){
   const q = normHist(HF.txt).trim();
   const l = HIST.filter(x=>
@@ -646,6 +677,7 @@ function pintarHist(){
     '<div><span>Gastos ('+l.filter(x=>x.tipo!=='Ingreso').length+')</span><strong>'+eur(gas)+'</strong></div>'+
     '<div><span>Ingresos ('+l.filter(x=>x.tipo==='Ingreso').length+')</span><strong class="pos">'+eur(ing)+'</strong></div>';
   if(!l.length){ document.getElementById('listaHist').innerHTML='<p class="sub" style="text-align:center">No hay movimientos con estos filtros.</p>'; return; }
+  if(ANCHO.matches){ pintarTablaHist(l); return; }
   let h='', mesAnt='';
   l.slice(0,400).forEach(x=>{
     if(x.mes!==mesAnt){ mesAnt=x.mes; const i=parseInt(String(x.mes).slice(5),10)-1;
@@ -659,6 +691,25 @@ function pintarHist(){
   if(l.length>400) h+='<p class="sub" style="text-align:center">Se muestran 400 de '+l.length+'. Afina los filtros para ver el resto.</p>';
   document.getElementById('listaHist').innerHTML=h;
 }
+function nombreMes(m){ const i=parseInt(String(m).slice(5),10)-1; return MESES[i] ? MESES[i]+' '+String(m).slice(0,4) : esc(m); }
+function pintarTablaHist(l){
+  let h='<table class="tabla-hist"><thead><tr><th>Fecha</th><th>Apto.</th><th>Categoría</th><th>Concepto</th><th class="num">Importe</th><th>Factura</th></tr></thead><tbody>';
+  let mesAnt='';
+  l.slice(0,1500).forEach(x=>{
+    if(x.mes!==mesAnt){ mesAnt=x.mes; h+='<tr class="grupo"><td colspan="6">'+nombreMes(x.mes)+'</td></tr>'; }
+    const f = x.factura||'Pendiente';
+    const etq = x.tipo==='Gasto' ? '<span class="etq '+(f==='Sí'?'si':f==='No'?'no':'pe')+'">'+(f==='Sí'?'Con factura':f==='No'?'Sin factura':'Pendiente')+'</span>' : '';
+    const abrir = x.archivo ? ' class="con-archivo" onclick="window.open(\''+esc(x.archivo).replace(/'/g,'%27')+'\',\'_blank\')" title="Abrir el archivo"' : '';
+    h+='<tr'+abrir+'><td>'+esc(x.fecha)+'</td><td>'+esc(String(x.apto).slice(0,2))+'</td><td>'+esc(x.cat)+'</td><td>'+esc(x.concepto||'')+'</td>'+
+       '<td class="num'+(x.tipo==='Ingreso'?' ing':'')+'">'+(x.tipo==='Ingreso'?'+':'')+eur(x.importe)+'</td><td>'+etq+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  if(l.length>1500) h+='<p class="sub" style="text-align:center">Se muestran 1.500 de '+l.length+'. Afina los filtros para ver el resto.</p>';
+  document.getElementById('listaHist').innerHTML=h;
+}
+const alCambiarAncho = ()=>{ if(document.getElementById('v-historial').classList.contains('activa')) pintarHist(); };
+if(ANCHO.addEventListener) ANCHO.addEventListener('change', alCambiarAncho); else if(ANCHO.addListener) ANCHO.addListener(alCambiarAncho);
+
 function chipsHist(id, clave){
   document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
     HF[clave]=b.dataset.v; document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('sel',x===b)); pintarHist();
