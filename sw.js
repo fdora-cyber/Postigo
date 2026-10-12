@@ -1,5 +1,5 @@
 // Postigo · service worker: guarda la app en el móvil para que abra rápido y sin conexión.
-const VERSION = 'postigo-v3';
+const VERSION = 'postigo-v4';
 const ARCHIVOS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', e => {

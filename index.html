@@ -93,6 +93,22 @@
   footer button{background:none;border:0;color:var(--c);font:inherit;text-decoration:underline;cursor:pointer;margin-top:6px}
   #toast{position:fixed;left:16px;right:16px;bottom:18px;background:var(--tinta);color:#fff;padding:14px 16px;border-radius:10px;font-size:15px;display:none;z-index:9;max-width:528px;margin:0 auto}
   .cargando{opacity:.55;pointer-events:none}
+  select{width:100%;font:inherit;font-size:15px;padding:11px 12px;border:1.5px solid var(--borde);border-radius:9px;background:#fff;color:var(--tinta);outline:none}
+  select:focus{border-color:var(--c)}
+  .filtros{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+  .chips.peq button{padding:7px 4px;font-size:13px}
+  .totales-hist{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 6px}
+  .totales-hist div{background:var(--fondo);border-radius:10px;padding:10px 12px}
+  .totales-hist span{display:block;color:var(--gris);font-size:12.5px}
+  .totales-hist strong{font-size:17px;font-weight:800}
+  .mov{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--borde);border-radius:12px;padding:11px 12px;margin-bottom:7px}
+  .mov div{flex:1;min-width:0}
+  .mov b{display:block;font-size:14.5px}
+  .mov small{display:block;color:var(--gris);font-size:12.5px;line-height:1.35;word-break:break-word}
+  .mov .imp{font-weight:800;white-space:nowrap;font-size:15px}
+  .mov .imp.ing{color:var(--verde)}
+  .etq{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:1px 6px;margin-top:3px}
+  .etq.si{background:#E3F1E7;color:var(--verde)}.etq.no{background:#F6E3E1;color:var(--rojo)}.etq.pe{background:var(--aviso);color:#8A6414}
   a{color:var(--c);font-weight:600}
 </style>
 </head>
@@ -111,6 +127,7 @@
     <button class="boton secundario" onclick="abrirAdjuntar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5L12.5 4a4 4 0 0 1 5.7 5.7L9.6 18.3a2 2 0 0 1-2.8-2.8L15 7.3"/></svg>Adjuntar factura a un gasto ya apuntado</button>
     <button class="boton secundario" onclick="mostrar('v-airbnb')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Subir archivo de Airbnb</button>
     <button class="boton secundario" onclick="informe()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Informe para la renta</button>
+    <button class="boton secundario" onclick="abrirHistorial()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>Historial de movimientos</button>
     <div class="tarjeta" id="t-avisos" style="margin-top:6px"></div>
     <button class="boton enlace" onclick="abrirHoja()">Abrir la hoja completa</button>
   </section>
@@ -192,6 +209,34 @@
     </div>
     <button class="boton enlace" onclick="volver()">Volver</button>
   </section>
+  <!-- HISTORIAL (solo lectura) -->
+  <section id="v-historial" class="vista">
+    <div class="tarjeta">
+      <div class="cab-tarjeta">
+        <div class="icono-circ"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--c)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></div>
+        <h2>Historial</h2>
+        <p class="sub">Todo lo apuntado en el año. Solo para consultar: aquí no se cambia nada.</p>
+      </div>
+      <input id="hBuscar" placeholder="Buscar: Endesa, Rosario, 206,22…" autocomplete="off" style="margin:6px 0 10px">
+      <div class="chips peq" id="hApto">
+        <button data-v="" class="sel">Todos</button><button data-v="00 Loft">00 Loft</button><button data-v="01 Apartamento">01 Apto.</button>
+      </div>
+      <div class="chips peq" id="hTipo" style="margin-top:-6px">
+        <button data-v="" class="sel">Todo</button><button data-v="Gasto">Gastos</button><button data-v="Ingreso">Ingresos</button>
+      </div>
+      <div class="filtros">
+        <select id="hMes"><option value="">Todos los meses</option></select>
+        <select id="hCat"><option value="">Todas las categorías</option></select>
+      </div>
+      <div class="chips peq" id="hFact">
+        <button data-v="" class="sel">Factura: todas</button><button data-v="Sí">Con factura</button><button data-v="No">Sin factura</button><button data-v="Pendiente">Pendiente</button>
+      </div>
+      <div class="totales-hist" id="hTotales"></div>
+      <div id="listaHist"><p class="sub" style="text-align:center">Cargando…</p></div>
+    </div>
+    <button class="boton enlace" onclick="volver()">Volver</button>
+  </section>
+
   <!-- CONEXIÓN -->
   <section id="v-config" class="vista">
     <div class="tarjeta">
@@ -548,6 +593,76 @@ function informe(){
     toast('Informe creado en tu Drive.');
   }).catch(e=>toast('Error: '+e.message,6000));
 }
+
+// ---------- Historial de movimientos (solo lectura) ----------
+let HIST = [], HF = {apto:'', tipo:'', fact:'', mes:'', cat:'', txt:''};
+function abrirHistorial(){
+  mostrar('v-historial');
+  try{ const c = localStorage.getItem('historial'); if(c){ HIST = JSON.parse(c); prepararFiltrosHist(); pintarHist(); } }catch(e){}
+  if(!HIST.length) document.getElementById('listaHist').innerHTML='<p class="sub" style="text-align:center">Cargando…</p>';
+  api('historial').then(l=>{
+    HIST = Array.isArray(l) ? l : [];
+    try{ localStorage.setItem('historial', JSON.stringify(HIST)); }catch(e){}
+    prepararFiltrosHist(); pintarHist();
+  }).catch(e=>{
+    let t;
+    if(e.servidor && /acci[oó]n|desconocid|no v[aá]lid/i.test(e.message)) t='Falta actualizar el Apps Script de la hoja para usar el historial.';
+    else t = e.servidor ? e.message : 'Sin conexión.';
+    if(HIST.length) toast(t+' Te enseño la última copia guardada.',6000);
+    else document.getElementById('listaHist').innerHTML='<p class="sub">'+esc(t)+'</p>';
+  });
+}
+function prepararFiltrosHist(){
+  const meses = [...new Set(HIST.map(x=>x.mes).filter(Boolean))].sort().reverse();
+  const cats = [...new Set(HIST.map(x=>x.cat).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const sm = document.getElementById('hMes'), sc = document.getElementById('hCat');
+  sm.innerHTML = '<option value="">Todos los meses</option>' + meses.map(m=>{
+    const i = parseInt(m.slice(5),10)-1;
+    return '<option value="'+esc(m)+'">'+(MESES[i] ? cap(MESES[i])+' '+m.slice(0,4) : esc(m))+'</option>';
+  }).join('');
+  sc.innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  sm.value = meses.includes(HF.mes) ? HF.mes : (HF.mes='');
+  sc.value = cats.includes(HF.cat) ? HF.cat : (HF.cat='');
+}
+function normHist(t){ return sinAcentos(String(t||'').toLowerCase()); }
+function pintarHist(){
+  const q = normHist(HF.txt).trim();
+  const l = HIST.filter(x=>
+    (!HF.apto || x.apto===HF.apto) &&
+    (!HF.tipo || x.tipo===HF.tipo) &&
+    (!HF.mes || x.mes===HF.mes) &&
+    (!HF.cat || x.cat===HF.cat) &&
+    (!HF.fact || (x.tipo==='Gasto' && (x.factura||'Pendiente')===HF.fact)) &&
+    (!q || normHist([x.concepto, x.cat, x.apto, x.fecha, eur(x.importe), String(x.importe).replace('.',',')].join(' ')).includes(q))
+  );
+  let ing=0, gas=0;
+  l.forEach(x=>{ if(x.tipo==='Ingreso') ing+=x.importe; else gas+=x.importe; });
+  document.getElementById('hTotales').innerHTML =
+    '<div><span>Gastos ('+l.filter(x=>x.tipo!=='Ingreso').length+')</span><strong>'+eur(gas)+'</strong></div>'+
+    '<div><span>Ingresos ('+l.filter(x=>x.tipo==='Ingreso').length+')</span><strong class="pos">'+eur(ing)+'</strong></div>';
+  if(!l.length){ document.getElementById('listaHist').innerHTML='<p class="sub" style="text-align:center">No hay movimientos con estos filtros.</p>'; return; }
+  let h='', mesAnt='';
+  l.slice(0,400).forEach(x=>{
+    if(x.mes!==mesAnt){ mesAnt=x.mes; const i=parseInt(String(x.mes).slice(5),10)-1;
+      h+='<div class="mes-grupo">'+(MESES[i]?MESES[i]+' '+String(x.mes).slice(0,4):esc(x.mes))+'</div>'; }
+    const f = x.factura||'Pendiente';
+    const etq = x.tipo==='Gasto' ? '<span class="etq '+(f==='Sí'?'si':f==='No'?'no':'pe')+'">'+(f==='Sí'?'Con factura':f==='No'?'Sin factura':'Factura pendiente')+'</span>' : '';
+    const abrir = x.archivo ? ' onclick="window.open(\''+esc(x.archivo).replace(/'/g,'%27')+'\',\'_blank\')" style="cursor:pointer"' : '';
+    h+='<div class="mov"'+abrir+'><div><b>'+esc(x.cat)+' · '+esc(String(x.apto).slice(0,2))+'</b><small>'+esc(x.fecha)+(x.concepto?' · '+esc(x.concepto):'')+'</small>'+etq+'</div>'+
+       '<span class="imp'+(x.tipo==='Ingreso'?' ing':'')+'">'+(x.tipo==='Ingreso'?'+':'')+eur(x.importe)+'</span></div>';
+  });
+  if(l.length>400) h+='<p class="sub" style="text-align:center">Se muestran 400 de '+l.length+'. Afina los filtros para ver el resto.</p>';
+  document.getElementById('listaHist').innerHTML=h;
+}
+function chipsHist(id, clave){
+  document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{
+    HF[clave]=b.dataset.v; document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('sel',x===b)); pintarHist();
+  });
+}
+chipsHist('hApto','apto'); chipsHist('hTipo','tipo'); chipsHist('hFact','fact');
+document.getElementById('hMes').onchange = e=>{ HF.mes=e.target.value; pintarHist(); };
+document.getElementById('hCat').onchange = e=>{ HF.cat=e.target.value; pintarHist(); };
+document.getElementById('hBuscar').oninput = e=>{ HF.txt=e.target.value; pintarHist(); };
 
 function abrirHoja(){ if(D) window.open(D.urlHoja,'_blank'); }
 
