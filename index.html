@@ -134,12 +134,29 @@
     .totales-hist{grid-template-columns:repeat(2,minmax(0,220px))}
     .barras{height:110px}
   }
+
+  #navTop{display:none}
+  @media (min-width:1000px){
+    header{padding-right:max(28px,calc((100vw - 1180px)/2 + 28px))}
+    #navTop{display:flex;gap:2px;margin-left:auto;flex-wrap:nowrap}
+    #navTop button{display:flex;align-items:center;gap:6px;border:0;background:none;font:inherit;font-size:14px;font-weight:600;color:var(--gris);padding:9px 11px;border-radius:8px;cursor:pointer;white-space:nowrap}
+    #navTop button:hover{background:var(--fondo);color:var(--tinta)}
+    #navTop button.sel{background:var(--c-suave);color:var(--c-osc)}
+    #navTop button[data-v="v-gasto"]{background:var(--c);color:#fff;margin:0 6px}
+    #navTop button[data-v="v-gasto"]:hover{background:var(--c-osc)}
+    #navTop button[data-v="v-gasto"].sel{box-shadow:0 0 0 3px var(--c-suave)}
+  }
+  @media (min-width:1000px){ header p{display:none} .tabla-hist th{top:72px} }
+  @media (min-width:1000px) and (max-width:1199px){
+    #navTop button[data-v="hoja"]{display:none}
+  }
 </style>
 </head>
 <body>
 <header>
   <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="var(--c)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 37V17a10 10 0 0 1 20 0v20"/><path d="M6 37h32"/><path d="M22 7v30"/><circle cx="18.5" cy="25" r="1.2" fill="var(--c)"/><circle cx="25.5" cy="25" r="1.2" fill="var(--c)"/></svg>
   <div><h1>Postigo</h1><p id="subtitulo">Contabilidad de los apartamentos</p></div>
+  <nav id="navTop" aria-label="Secciones"><button data-v="v-inicio" class="sel" onclick="volver()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Inicio</button><button data-v="v-gasto" onclick="irGasto()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Apuntar gasto</button><button data-v="v-adjuntar" onclick="abrirAdjuntar()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5L12.5 4a4 4 0 0 1 5.7 5.7L9.6 18.3a2 2 0 0 1-2.8-2.8L15 7.3"/></svg>Adjuntar factura</button><button data-v="v-historial" onclick="abrirHistorial()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>Historial</button><button data-v="v-airbnb" onclick="mostrar('v-airbnb')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Airbnb</button><button data-v="informe" onclick="mostrar('v-inicio');informe()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Informe renta</button><button data-v="hoja" onclick="abrirHoja()" title="Abrir la hoja de Google"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Hoja</button></nav>
 </header>
 
 <main>
@@ -383,7 +400,7 @@ function eur(n){const s=(Math.round(n*100)/100).toFixed(2);let [e,d]=s.split('.'
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function sinAcentos(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function toast(t,ms){const el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',ms||3500);}
-function mostrar(id){document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));document.getElementById(id).classList.add('activa');window.scrollTo(0,0);}
+function mostrar(id){document.querySelectorAll('.vista').forEach(v=>v.classList.remove('activa'));document.getElementById(id).classList.add('activa');window.scrollTo(0,0);document.querySelectorAll('#navTop button').forEach(b=>b.classList.toggle('sel',b.dataset.v===id));}
 function volver(){mostrar('v-inicio');cargar();}
 function signo(n){return n<0?'neg':'pos';}
 
