@@ -87,6 +87,9 @@
   .ayuda{color:var(--gris);font-size:13.5px;margin-top:6px}
   .foto{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed #CFCFC9;border-radius:10px;padding:16px;cursor:pointer;color:var(--c);font-weight:600}
   .foto input{display:none}
+  .papel{display:flex;align-items:center;gap:12px;border:1.5px solid var(--borde);border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;font-weight:600;background:#fff}
+  .papel input{width:22px;height:22px;margin:0;accent-color:var(--c);flex:none}
+  .papel.sel{border-color:var(--c);background:var(--c-suave);color:var(--c-osc)}
   hr{border:0;border-top:1px solid var(--borde);margin:18px 0}
   details summary{cursor:pointer;color:var(--c);font-weight:600;margin-top:18px}
   footer{text-align:center;color:var(--gris);font-size:13px;padding:0 16px calc(28px + env(safe-area-inset-bottom))}
@@ -200,10 +203,11 @@
       <div class="fila cats" id="cats"></div>
 
       <label class="titulo">4 · Factura oficial <span style="font-weight:400;color:var(--gris)">(solo si la tiene)</span></label>
+      <label class="papel" id="papelLbl"><input type="checkbox" id="papel" onchange="this.parentNode.classList.toggle('sel',this.checked)"><span>Tengo la factura en papel</span></label>
       <label class="foto" id="fotoLbl"><span>Hacer foto o elegir archivo</span>
         <input type="file" id="foto" accept="image/*,application/pdf">
       </label>
-      <div class="ayuda">Con factura, el gasto cuenta para la renta. Sin factura, solo para ver la rentabilidad.</div>
+      <div class="ayuda">Con factura (en papel o adjunta), el gasto cuenta para la renta. Sin factura, solo para ver la rentabilidad.</div>
 
       <label class="titulo">Nota <span style="font-weight:400;color:var(--gris)">(opcional)</span></label>
       <input id="concepto" placeholder="Ej.: toallas, bombillas…">
@@ -496,6 +500,7 @@ function irGasto(){
   document.getElementById('mes').value = D ? D.mesAct : '';
   document.getElementById('fecha').value = D ? D.hoy : '';
   document.getElementById('foto').value='';
+  document.getElementById('papel').checked=false; document.getElementById('papelLbl').classList.remove('sel');
   document.getElementById('fotoLbl').querySelector('span').textContent='Hacer foto o elegir archivo';
   document.querySelectorAll('#v-gasto .op').forEach(b=>b.classList.remove('sel'));
   mostrar('v-gasto');
@@ -609,7 +614,7 @@ function guardar(forzar){
   btn.classList.add('cargando'); btn.textContent='Guardando…';
   const datos = {importe:importe.replace(/[€\s]/g,''), apto:sel.apto, categoria:sel.cat,
     mes:document.getElementById('mes').value, fecha:document.getElementById('fecha').value,
-    concepto:document.getElementById('concepto').value, foto:fotoData, forzar:forzar};
+    concepto:document.getElementById('concepto').value, foto:fotoData, papel:document.getElementById('papel').checked, forzar:forzar};
   const listo=()=>{ btn.classList.remove('cargando'); btn.textContent='Guardar'; };
   api('gasto',{datos:datos}).then(r=>{
     listo();
