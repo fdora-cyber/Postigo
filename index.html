@@ -497,8 +497,11 @@ function marcar(idCont, clave, v){
 function irGasto(){
   sel={apto:null,cat:null}; fotoData=null;
   ['importe','concepto'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('mes').value = D ? D.mesAct : '';
-  document.getElementById('fecha').value = D ? D.hoy : '';
+  // Fecha y mes del reloj del móvil en este momento (no de la última carga guardada)
+  const h = new Date();
+  const hoyTxt = h.getFullYear() + '-' + String(h.getMonth()+1).padStart(2,'0') + '-' + String(h.getDate()).padStart(2,'0');
+  document.getElementById('mes').value = hoyTxt.slice(0,7);
+  document.getElementById('fecha').value = hoyTxt;
   document.getElementById('foto').value='';
   document.getElementById('papel').checked=false; document.getElementById('papelLbl').classList.remove('sel');
   document.getElementById('fotoLbl').querySelector('span').textContent='Hacer foto o elegir archivo';
